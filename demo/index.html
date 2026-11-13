@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bancada do Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: folha de especificação — coluna editorial alinhada à esquerda, seções numeradas, ferramentas em "pranchetas" */
+  --bg: #eef0f3;
+  --surface: #ffffff;
+  --ink: #14171f;
+  --muted: #5b6272;
+  --line: #d6dae2;
+  --accent: #2a3fd4;
+  --accent-ink: #ffffff;
+  --ok: #1d7a46;
+  --warn: #a4560b;
+  --bad: #b42323;
+  --font-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Instrument Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101218; --surface: #191c24; --ink: #eceef3; --muted: #9aa1b0; --line: #2b303c;
+    --accent: #8593ff; --accent-ink: #0d1030; --ok: #5cc98a; --warn: #f0a457; --bad: #ff7b7b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101218; --surface: #191c24; --ink: #eceef3; --muted: #9aa1b0; --line: #2b303c;
+  --accent: #8593ff; --accent-ink: #0d1030; --ok: #5cc98a; --warn: #f0a457; --bad: #ff7b7b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.08; }
+h1 { font-size: clamp(40px, 7vw, 76px); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 20px; font-weight: 700; }
+p { margin: 0; max-width: 65ch; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+header.top { padding: 56px 0 36px; display: grid; gap: 20px; }
+.kicker { font-family: var(--font-mono); font-size: 13px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.lede { font-size: 20px; max-width: 60ch; }
+
+.map { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 8px 0 0; padding: 0; list-style: none; }
+.map a {
+  display: grid; gap: 4px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); color: inherit; text-decoration: none; min-height: 72px;
+}
+.map a:hover { border-color: var(--accent); }
+.map b { font-family: var(--font-display); font-size: 17px; }
+.map span { font-size: 14px; color: var(--muted); }
+.map .n { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+
+section.tool { padding: 56px 0; border-top: 1px solid var(--line); display: grid; gap: 22px; }
+.tool-head { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: baseline; }
+.tool-head .n { font-family: var(--font-mono); color: var(--accent); font-size: 15px; grid-row: span 2; }
+.board { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(16px, 3vw, 28px); display: grid; gap: 20px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 28px; align-items: start; }
+@media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+
+label { font-size: 14px; font-weight: 600; display: block; margin-bottom: 6px; }
+.field { display: grid; gap: 2px; }
+.fields { display: grid; gap: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+input[type="text"], input[type="number"], select, textarea {
+  font: inherit; font-size: 16px; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; width: 100%; min-height: 44px;
+}
+input[type="range"] { width: 100%; accent-color: var(--accent); min-height: 32px; }
+input[type="color"] { width: 56px; height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 2px; background: var(--bg); }
+button {
+  font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
+}
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.out { font-family: var(--font-mono); font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; white-space: pre-wrap; overflow-x: auto; margin: 0; }
+
+/* 01 paleta */
+.scale { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 620px) { .scale { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.sw {
+  border: 0; border-radius: 10px; padding: 10px 8px; min-height: 96px; display: flex; flex-direction: column;
+  justify-content: space-between; align-items: flex-start; text-align: left; font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+}
+.sw .chip { font-size: 10px; padding: 1px 6px; border-radius: 999px; background: rgba(255,255,255,.22); }
+.harmony { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.hcard { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.hcard .bars { display: flex; height: 56px; }
+.hcard .bars i { flex: 1; }
+.hcard p { padding: 8px 10px; font-size: 13px; }
+
+.contrast { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.pair { border-radius: 12px; padding: 16px; display: grid; gap: 8px; }
+.pair .big { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.pill { font-family: var(--font-mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; display: inline-block; }
+.pill.ok { background: var(--ok); color: #fff; }
+.pill.bad { background: var(--bad); color: #fff; }
+
+/* 02 tipo */
+.tsteps { display: grid; gap: 4px; overflow-x: auto; }
+.tstep { display: grid; grid-template-columns: 128px 1fr; gap: 14px; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.tstep .mono { color: var(--muted); }
+.tstep div:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+
+/* 03 easing */
+.ease-wrap { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 760px) { .ease-wrap { grid-template-columns: 1fr; } }
+svg.curve { width: 100%; max-width: 300px; touch-action: none; background: var(--bg); border-radius: 12px; border: 1px solid var(--line); display: block; }
+svg.curve .grid { stroke: var(--line); stroke-width: 1; }
+svg.curve .lever { stroke: var(--muted); stroke-width: 1.5; }
+svg.curve .path { stroke: var(--accent); stroke-width: 3.5; fill: none; }
+svg.curve .h { fill: var(--surface); stroke: var(--accent); stroke-width: 3; cursor: grab; }
+.track { position: relative; height: 64px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.dot { position: absolute; top: 12px; left: 12px; width: 40px; height: 40px; border-radius: 10px; background: var(--accent); }
+.track.go .dot { transform: translateX(calc(var(--tw) - 64px)); }
+.ghost { opacity: .25; }
+
+/* 04 pôster */
+.poster-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 28px; align-items: start; }
+@media (max-width: 760px) { .poster-wrap { grid-template-columns: 1fr; } }
+#posterCanvas, #posterImg { width: 100%; max-width: 340px; aspect-ratio: 3 / 4; border-radius: 8px; display: block; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+
+/* 05 orçamento */
+.totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 520px) { .totals { grid-template-columns: 1fr; } }
+.tot { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg); }
+.tot b { display: block; font-family: var(--font-display); font-size: 26px; font-variant-numeric: tabular-nums; }
+.tot span { font-size: 13px; color: var(--muted); }
+.check { display: flex; gap: 10px; align-items: center; min-height: 44px; font-weight: 500; font-size: 15px; }
+.check input { width: 22px; height: 22px; accent-color: var(--accent); }
+
+/* 06 copy */
+.copies { display: grid; gap: 12px; }
+.cp { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+@media (max-width: 620px) { .cp { grid-template-columns: 1fr; } }
+.cp > div { padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.cp .before { background: var(--bg); }
+.cp .tag { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.cp .before p { text-decoration: line-through; text-decoration-color: var(--bad); color: var(--muted); }
+.cp small { color: var(--muted); font-size: 13px; }
+
+/* 07 além */
+.more { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.mc { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 18px; display: grid; gap: 8px; align-content: start; border-left: 4px solid var(--accent); }
+.mc.limit { border-left-color: var(--warn); }
+.mc ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.mc li { margin: 3px 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+footer { padding: 40px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: .2s; pointer-events: none; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0s !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">Demonstração · feita para tocar no iPad</div>
+  <h1>Bancada do Designer</h1>
+  <p class="lede">Seis ferramentas que escrevi para o seu dia a dia de freelancer, todas funcionando nesta página. Mexa à vontade: a paleta que você criar na seção 1 alimenta o pôster da seção 4.</p>
+  <ul class="map">
+    <li><a href="#paleta"><span class="n">01</span><b>Paleta e contraste</b><span>Escala de 10 tons, harmonias e checagem WCAG</span></a></li>
+    <li><a href="#tipo"><span class="n">02</span><b>Escala tipográfica</b><span>Proporção modular com tokens prontos</span></a></li>
+    <li><a href="#easing"><span class="n">03</span><b>Curva de animação</b><span>Cubic-bezier para Framer e Linearity Move</span></a></li>
+    <li><a href="#poster"><span class="n">04</span><b>Pôster generativo</b><span>Composições com a sua paleta</span></a></li>
+    <li><a href="#orcamento"><span class="n">05</span><b>Orçamento</b><span>Preço do projeto e texto da proposta</span></a></li>
+    <li><a href="#copy"><span class="n">06</span><b>UX copy</b><span>Antes e depois de textos de interface</span></a></li>
+    <li><a href="#alem"><span class="n">07</span><b>Fora desta página</b><span>Figma, Notion, Gmail, documentos e limites</span></a></li>
+  </ul>
+</header>
+
+<!-- 01 -->
+<section class="tool" id="paleta">
+  <div class="tool-head"><span class="n">01</span><h2>Paleta e contraste</h2><p class="muted">Escolha uma cor base. Gero a escala do 50 ao 900, harmonias de matiz e verifico o contraste de texto pelo critério WCAG 2.1. Toque num tom para copiar o hex.</p></div>
+  <div class="board">
+    <div class="row">
+      <input type="color" id="baseColor" value="#2a3fd4" aria-label="Cor base">
+      <input type="text" id="baseHex" value="#2A3FD4" style="max-width:140px" aria-label="Hex da cor base" class="mono">
+      <button id="randColor">Cor aleatória</button>
+      <button id="copyTokens">Copiar tokens CSS</button>
+    </div>
+    <div class="scale" id="scale"></div>
+    <h3>Harmonias</h3>
+    <div class="harmony" id="harmony"></div>
+    <h3>Contraste de texto</h3>
+    <div class="contrast" id="contrast"></div>
+    <p class="muted" style="font-size:14px">AA pede 4,5:1 para texto normal e 3:1 para texto grande (24px ou 18,6px em negrito). AAA pede 7:1.</p>
+  </div>
+</section>
+
+<!-- 02 -->
+<section class="tool" id="tipo">
+  <div class="tool-head"><span class="n">02</span><h2>Escala tipográfica</h2><p class="muted">Defina tamanho base e proporção. Os valores saem arredondados e prontos para colar como variáveis no Figma ou no Framer.</p></div>
+  <div class="board split">
+    <div class="fields">
+      <div class="field"><label for="tBase">Tamanho base: <span id="tBaseV" class="mono">17px</span></label><input type="range" id="tBase" min="14" max="22" value="17"></div>
+      <div class="field"><label for="tRatio">Proporção</label>
+        <select id="tRatio">
+          <option value="1.125">1,125 · Segunda maior</option>
+          <option value="1.2">1,200 · Terça menor</option>
+          <option value="1.25" selected>1,250 · Terça maior</option>
+          <option value="1.333">1,333 · Quarta justa</option>
+          <option value="1.5">1,500 · Quinta justa</option>
+          <option value="1.618">1,618 · Proporção áurea</option>
+        </select></div>
+      <div class="field"><label for="tFont">Fonte da amostra</label>
+        <select id="tFont">
+          <option value="display">Bricolage Grotesque</option>
+          <option value="body">Instrument Sans</option>
+          <option value="mono">JetBrains Mono</option>
+        </select></div>
+      <div class="field"><label for="tText">Texto da amostra</label><input type="text" id="tText" value="Identidade visual com propósito"></div>
+      <pre class="out" id="tOut"></pre>
+      <button id="copyType">Copiar variáveis</button>
+    </div>
+    <div class="tsteps" id="tSteps"></div>
+  </div>
+</section>
+
+<!-- 03 -->
+<section class="tool" id="easing">
+  <div class="tool-head"><span class="n">03</span><h2>Curva de animação</h2><p class="muted">Arraste as duas alças com o dedo ou com o Apple Pencil. O valor serve no Framer (transição personalizada), no CSS e como referência para os keyframes do Linearity Move.</p></div>
+  <div class="board ease-wrap">
+    <svg class="curve" id="curve" viewBox="0 0 200 300" role="img" aria-label="Editor de curva cubic-bezier">
+      <line class="grid" x1="0" y1="75" x2="200" y2="75"/><line class="grid" x1="0" y1="225" x2="200" y2="225"/>
+      <line class="grid" x1="100" y1="0" x2="100" y2="300"/>
+      <line class="lever" id="l1"/><line class="lever" id="l2"/>
+      <path class="path" id="cpath"/>
+      <circle class="h" id="h1" r="11"/><circle class="h" id="h2" r="11"/>
+    </svg>
+    <div class="fields">
+      <div class="row" id="presets"></div>
+      <pre class="out" id="eOut"></pre>
+      <div class="field"><label for="eDur">Duração: <span id="eDurV" class="mono">700ms</span></label><input type="range" id="eDur" min="150" max="2000" step="50" value="700"></div>
+      <div class="track" id="track"><div class="dot ghost" id="dotLinear"></div><div class="dot" id="dot"></div></div>
+      <p class="muted" style="font-size:14px">O quadrado claro anda em velocidade linear, para comparar.</p>
+      <div class="row"><button class="primary" id="play">Reproduzir</button><button id="copyEase">Copiar valor</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section class="tool" id="poster">
+  <div class="tool-head"><span class="n">04</span><h2>Pôster generativo</h2><p class="muted">Composições geométricas a partir da paleta da seção 1. Cada semente gera sempre o mesmo pôster, então dá para voltar numa variação de que você gostou. Para salvar, toque e segure a imagem.</p></div>
+  <div class="board poster-wrap">
+    <div class="fields">
+      <div class="field"><label for="pTitle">Título</label><input type="text" id="pTitle" value="Estudo 01"></div>
+      <div class="field"><label for="pSub">Linha de apoio</label><input type="text" id="pSub" value="Forma · Cor · Ritmo"></div>
+      <div class="field"><label for="pGrid">Densidade da grade: <span id="pGridV" class="mono">4 × 5</span></label><input type="range" id="pGrid" min="2" max="8" value="4"></div>
+      <div class="field"><label for="pSeed">Semente</label><input type="number" id="pSeed" value="2026" inputmode="numeric"></div>
+      <div class="row"><button class="primary" id="pNew">Nova variação</button><button id="pDark" aria-pressed="false">Fundo escuro</button></div>
+    </div>
+    <div>
+      <canvas id="posterCanvas" width="900" height="1200" style="display:none"></canvas>
+      <img id="posterImg" alt="Pôster geométrico gerado com a paleta atual">
+    </div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section class="tool" id="orcamento">
+  <div class="tool-head"><span class="n">05</span><h2>Orçamento de projeto</h2><p class="muted">Uma calculadora para precificar e já sair com o texto da proposta. Os valores iniciais são exemplos: troque pelo seu valor-hora.</p></div>
+  <div class="board split">
+    <div class="fields">
+      <div class="field"><label for="qType">Tipo de projeto</label>
+        <select id="qType">
+          <option value="identidade">Identidade visual</option>
+          <option value="site">Site no Framer</option>
+          <option value="social">Pacote de posts para redes</option>
+          <option value="motion">Vinheta animada</option>
+        </select></div>
+      <div class="field"><label for="qClient">Cliente</label><input type="text" id="qClient" value="Café Aurora"></div>
+      <div class="row" style="gap:16px">
+        <div class="field" style="flex:1;min-width:130px"><label for="qHours">Horas estimadas</label><input type="number" id="qHours" value="40" min="1" inputmode="numeric"></div>
+        <div class="field" style="flex:1;min-width:130px"><label for="qRate">Valor-hora (R$)</label><input type="number" id="qRate" value="120" min="1" inputmode="numeric"></div>
+      </div>
+      <div class="field"><label for="qRev">Rodadas de revisão incluídas: <span id="qRevV" class="mono">2</span></label><input type="range" id="qRev" min="1" max="5" value="2"></div>
+      <label class="check"><input type="checkbox" id="qRush"> Prazo urgente (+30%)</label>
+      <label class="check"><input type="checkbox" id="qFiles" checked> Entrega de arquivos abertos (+15%)</label>
+      <div class="field"><label for="qInst">Parcelas após o sinal</label>
+        <select id="qInst"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></div>
+    </div>
+    <div class="fields">
+      <div class="totals">
+        <div class="tot"><span>Total</span><b id="qTotal">–</b></div>
+        <div class="tot"><span>Sinal de 50%</span><b id="qDown">–</b></div>
+        <div class="tot"><span id="qInstL">Parcelas</span><b id="qPart">–</b></div>
+      </div>
+      <pre class="out" id="qText" style="max-height:340px;overflow:auto"></pre>
+      <button id="copyQuote">Copiar texto da proposta</button>
+    </div>
+  </div>
+</section>
+
+<!-- 06 -->
+<section class="tool" id="copy">
+  <div class="tool-head"><span class="n">06</span><h2>UX copy</h2><p class="muted">Textos de interface são parte do layout. Exemplos de como reescrevo microcopy quando você me manda a tela ou o texto original.</p></div>
+  <div class="copies">
+    <div class="cp"><div class="before"><span class="tag">Antes · botão</span><p>Enviar</p></div><div><span class="tag">Depois</span><p><b>Pedir orçamento</b></p><small>O botão diz o que acontece depois do toque.</small></div></div>
+    <div class="cp"><div class="before"><span class="tag">Antes · erro</span><p>Erro 422: dados inválidos.</p></div><div><span class="tag">Depois</span><p><b>Esse e-mail parece incompleto. Confira se tem “@” e o domínio, como nome@empresa.com.</b></p><small>Explica o problema e como resolver, sem código técnico.</small></div></div>
+    <div class="cp"><div class="before"><span class="tag">Antes · estado vazio</span><p>Nenhum item encontrado.</p></div><div><span class="tag">Depois</span><p><b>Seu portfólio ainda está vazio. Envie o primeiro projeto e ele aparece aqui.</b></p><small>O vazio vira convite para a próxima ação.</small></div></div>
+    <div class="cp"><div class="before"><span class="tag">Antes · confirmação</span><p>Tem certeza? Sim / Não</p></div><div><span class="tag">Depois</span><p><b>Excluir “Rebranding 2026”? Os 14 arquivos vão junto. · Excluir projeto / Manter</b></p><small>Nomeia o objeto, mostra a consequência e dá rótulos claros.</small></div></div>
+  </div>
+</section>
+
+<!-- 07 -->
+<section class="tool" id="alem">
+  <div class="tool-head"><span class="n">07</span><h2>Fora desta página</h2><p class="muted">O que mais posso fazer por você nesta mesma conversa, a partir do iPad. Algumas coisas dependem de conectores que já aparecem ligados aqui.</p></div>
+  <div class="legend"><span><i style="background:var(--accent)"></i>Posso fazer</span><span><i style="background:var(--warn)"></i>Limites que é bom saber</span></div>
+  <div class="more">
+    <div class="mc"><h3>Figma</h3><ul><li>Criar arquivos, frames, componentes e variantes</li><li>Montar variáveis de cor e tipo a partir desta paleta</li><li>Ler um frame seu e transformar em código</li><li>Diagramas e quadros no FigJam</li></ul></div>
+    <div class="mc"><h3>Sites e Framer</h3><ul><li>Landing pages completas em HTML/CSS</li><li>Componentes de código para colar no Framer</li><li>Páginas publicadas como esta, com link privado</li><li>Revisão de acessibilidade e SEO</li></ul></div>
+    <div class="mc"><h3>Cliente e projeto</h3><ul><li>Briefings, propostas e contratos simples</li><li>Apresentações em slides para entregar o projeto</li><li>Documentos de handoff com especificações</li><li>Crítica de design estruturada a partir de um print</li></ul></div>
+    <div class="mc"><h3>Organização</h3><ul><li>Páginas e bancos de dados no Notion</li><li>Rascunhos de e-mail no Gmail</li><li>Eventos na sua agenda</li><li>Pesquisa de referências e concorrentes na web</li></ul></div>
+    <div class="mc"><h3>Arquivos e código</h3><ul><li>Converter, redimensionar e otimizar imagens</li><li>Gerar SVGs e padrões vetoriais</li><li>Planilhas de controle financeiro e de horas</li><li>Salvar e versionar tudo no seu GitHub</li></ul></div>
+    <div class="mc limit"><h3>Limites</h3><ul><li>Não controlo apps do iPad, como Affinity, Final Cut ou Linearity: entrego arquivos e valores para você aplicar</li><li>Esta sessão roda na nuvem, não no seu aparelho</li><li>Páginas daqui não baixam arquivos direto: uso “copiar” ou “tocar e segurar”</li><li>Imagens que gero são vetoriais ou por código, não fotográficas</li></ul></div>
+  </div>
+</section>
+
+<footer>Feito em uma conversa com o Claude. Os valores do orçamento e os textos de exemplo são fictícios.</footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const toastEl = $('toast'); let tT;
+function toast(m) { toastEl.textContent = m; toastEl.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => toastEl.classList.remove('on'), 1600); }
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); toast(msg || 'Copiado'); }
+  catch (e) { toast('Não consegui copiar aqui. Selecione o texto e copie.'); }
+}
+
+/* ---------- cor ---------- */
+function hexToRgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function rgbToHex(r, g, b) { return '#' + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('').toUpperCase(); }
+function rgbToHsl(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); let h = 0, s = 0; const l = (mx + mn) / 2;
+  if (mx !== mn) { const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn);
+    h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; }
+  return [h, s * 100, l * 100]; }
+function hslToHex(h, s, l) { h = ((h % 360) + 360) % 360; s /= 100; l /= 100; const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return rgbToHex(f(0) * 255, f(8) * 255, f(4) * 255); }
+function lum(hex) { return hexToRgb(hex).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }).reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0); }
+function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); }
+const fmt = n => n.toFixed(2).replace('.', ',');
+
+const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+const LIGHT = [97, 93, 85, 75, 63, 52, 43, 34, 26, 18];
+let palette = { base: '#2A3FD4', scale: [], harm: {} };
+
+function buildPalette(hex) {
+  const [h, s] = rgbToHsl(...hexToRgb(hex));
+  const scale = LIGHT.map((l, i) => hslToHex(h, Math.min(100, s * (i < 2 ? .9 : i > 7 ? .85 : 1)), l));
+  const harm = {
+    'Complementar': [hex, hslToHex(h, s, 85), hslToHex(h + 180, s, 50), hslToHex(h + 180, s * .6, 82)],
+    'Análoga': [hslToHex(h - 30, s, 52), hex, hslToHex(h + 30, s, 52), hslToHex(h + 60, s * .8, 60)],
+    'Triádica': [hex, hslToHex(h + 120, s, 52), hslToHex(h + 240, s, 52), hslToHex(h, s * .3, 92)],
+    'Monocromática': [scale[1], scale[3], scale[5], scale[7], scale[9]]
+  };
+  palette = { base: hex.toUpperCase(), scale, harm, hue: h, sat: s };
+  renderPalette();
+  drawPoster();
+}
+function renderPalette() {
+  const sc = $('scale'); sc.innerHTML = '';
+  palette.scale.forEach((c, i) => {
+    const onWhite = ratio(c, '#FFFFFF'), fg = onWhite >= 4.5 ? '#FFFFFF' : '#14171F';
+    const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.style.color = fg;
+    b.setAttribute('aria-label', `Tom ${STEPS[i]}, ${c}, toque para copiar`);
+    b.innerHTML = `<span>${STEPS[i]}</span><span>${c}<br><span class="chip">${fmt(ratio(c, fg))}:1</span></span>`;
+    b.onclick = () => copy(c, `${c} copiado`); sc.appendChild(b);
+  });
+  const hm = $('harmony'); hm.innerHTML = '';
+  Object.entries(palette.harm).forEach(([name, cols]) => {
+    const d = document.createElement('div'); d.className = 'hcard';
+    d.innerHTML = `<div class="bars">${cols.map(c => `<i style="background:${c}" title="${c}"></i>`).join('')}</div><p><b>${name}</b><br><span class="mono">${cols.join(' ')}</span></p>`;
+    d.onclick = () => copy(cols.join(', '), `Harmonia ${name.toLowerCase()} copiada`); d.style.cursor = 'pointer'; hm.appendChild(d);
+  });
+  const pairs = [[palette.scale[0], palette.scale[8], 'Fundo 50, texto 800'], [palette.base, '#FFFFFF', 'Base com texto branco'], [palette.scale[2], palette.scale[6], 'Fundo 200, texto 600'], [palette.scale[9], palette.scale[3], 'Fundo 900, texto 300']];
+  const ct = $('contrast'); ct.innerHTML = '';
+  pairs.forEach(([bg, fg, label]) => {
+    const r = ratio(bg, fg); const pill = (ok, t) => `<span class="pill ${ok ? 'ok' : 'bad'}">${t} ${ok ? '✓' : '✕'}</span>`;
+    const d = document.createElement('div'); d.className = 'pair'; d.style.background = bg; d.style.color = fg;
+    d.innerHTML = `<span class="big">Aa ${fmt(r)}:1</span><span style="font-size:14px">${label}</span><div class="row" style="gap:6px">${pill(r >= 4.5, 'AA')}${pill(r >= 3, 'AA grande')}${pill(r >= 7, 'AAA')}</div>`;
+    ct.appendChild(d);
+  });
+}
+$('baseColor').addEventListener('input', e => { $('baseHex').value = e.target.value.toUpperCase(); buildPalette(e.target.value); });
+$('baseHex').addEventListener('change', e => { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v;
+  if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) { const full = rgbToHex(...hexToRgb(v)); e.target.value = full; $('baseColor').value = full.toLowerCase(); buildPalette(full); }
+  else { toast('Use um hex como #2A3FD4'); e.target.value = palette.base; } });
+$('randColor').onclick = () => { const c = hslToHex(Math.random() * 360, 55 + Math.random() * 35, 42 + Math.random() * 14); $('baseColor').value = c.toLowerCase(); $('baseHex').value = c; buildPalette(c); };
+$('copyTokens').onclick = () => copy(':root {\n' + palette.scale.map((c, i) => `  --brand-${STEPS[i]}: ${c};`).join('\n') + '\n}', 'Tokens CSS copiados');
+
+/* ---------- tipo ---------- */
+const NAMES = ['caption', 'small', 'body', 'h6', 'h5', 'h4', 'h3', 'h2', 'h1', 'display'];
+function renderType() {
+  const base = +$('tBase').value, r = +$('tRatio').value, font = $('tFont').value, txt = $('tText').value || 'Aa';
+  $('tBaseV').textContent = base + 'px';
+  const sizes = NAMES.map((n, i) => ({ n, px: Math.round(base * Math.pow(r, i - 2)) }));
+  $('tSteps').innerHTML = sizes.slice().reverse().map(s => `<div class="tstep"><span class="mono">${s.n} · ${s.px}px</span><div style="font-family:var(--font-${font});font-size:${s.px}px;font-weight:${s.px > base * 1.4 ? 700 : 400}">${txt.replace(/</g, '&lt;')}</div></div>`).join('');
+  $('tOut').textContent = sizes.map(s => `--text-${s.n}: ${s.px}px; /* ${(s.px / 16).toFixed(3)}rem */`).join('\n');
+}
+['tBase', 'tRatio', 'tFont', 'tText'].forEach(id => $(id).addEventListener('input', renderType));
+$('copyType').onclick = () => copy($('tOut').textContent, 'Variáveis copiadas');
+
+/* ---------- easing ---------- */
+let P = [0.16, 1, 0.3, 1];
+const PRESETS = { 'Suave': [0.25, 0.1, 0.25, 1], 'Saída expo': [0.16, 1, 0.3, 1], 'Entrada e saída': [0.65, 0, 0.35, 1], 'Elástico': [0.34, 1.56, 0.64, 1], 'Antecipação': [0.68, -0.6, 0.32, 1.6] };
+const toX = x => x * 200, toY = y => 225 - y * 150, fromX = px => Math.max(0, Math.min(1, px / 200)), fromY = py => Math.max(-0.5, Math.min(1.5, (225 - py) / 150));
+const r2 = v => Math.round(v * 100) / 100;
+function renderEase() {
+  const [a, b, c, d] = P;
+  $('cpath').setAttribute('d', `M0 225 C ${toX(a)} ${toY(b)}, ${toX(c)} ${toY(d)}, 200 75`);
+  const set = (el, attrs) => Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  set($('l1'), { x1: 0, y1: 225, x2: toX(a), y2: toY(b) }); set($('l2'), { x1: 200, y1: 75, x2: toX(c), y2: toY(d) });
+  set($('h1'), { cx: toX(a), cy: toY(b) }); set($('h2'), { cx: toX(c), cy: toY(d) });
+  const v = `cubic-bezier(${P.map(r2).join(', ')})`;
+  $('eOut').textContent = `CSS     ${v}\nFramer  ease: [${P.map(r2).join(', ')}]\nduração ${$('eDur').value}ms`;
+  $('dot').style.transition = `transform ${$('eDur').value}ms ${v}`;
+  $('dotLinear').style.transition = `transform ${$('eDur').value}ms linear`;
+  document.querySelectorAll('#presets button').forEach(btn => btn.setAttribute('aria-pressed', JSON.stringify(PRESETS[btn.textContent]) === JSON.stringify(P.map(r2))));
+}
+Object.keys(PRESETS).forEach(k => { const b = document.createElement('button'); b.textContent = k; b.onclick = () => { P = PRESETS[k].slice(); renderEase(); play(); }; $('presets').appendChild(b); });
+const svg = $('curve');
+function svgPoint(e) { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+[['h1', 0], ['h2', 2]].forEach(([id, idx]) => {
+  const h = $(id);
+  h.addEventListener('pointerdown', e => { e.preventDefault(); h.setPointerCapture(e.pointerId); h.style.cursor = 'grabbing'; });
+  h.addEventListener('pointermove', e => { if (!h.hasPointerCapture(e.pointerId)) return; const p = svgPoint(e); P[idx] = fromX(p.x); P[idx + 1] = fromY(p.y); renderEase(); });
+  h.addEventListener('pointerup', e => { h.releasePointerCapture(e.pointerId); h.style.cursor = 'grab'; play(); });
+});
+function play() {
+  const t = $('track'); t.style.setProperty('--tw', t.clientWidth + 'px');
+  t.classList.remove('go'); void t.offsetWidth;
+  requestAnimationFrame(() => t.classList.add('go'));
+  clearTimeout(play.tm); play.tm = setTimeout(() => t.classList.remove('go'), +$('eDur').value + 600);
+}
+$('play').onclick = play;
+$('eDur').addEventListener('input', e => { $('eDurV').textContent = e.target.value + 'ms'; renderEase(); });
+$('copyEase').onclick = () => copy(`cubic-bezier(${P.map(r2).join(', ')})`, 'Curva copiada');
+
+/* ---------- pôster ---------- */
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let posterDark = false;
+function drawPoster() {
+  if (!palette.scale.length) return;
+  const cv = $('posterCanvas'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  const R = rng(+$('pSeed').value || 1), cols = +$('pGrid').value, rows = Math.round(cols * 1.25);
+  $('pGridV').textContent = `${cols} × ${rows}`;
+  const bg = posterDark ? palette.scale[9] : palette.scale[0], ink = posterDark ? palette.scale[0] : palette.scale[9];
+  const pool = [palette.base, palette.scale[3], palette.scale[7], palette.harm['Complementar'][2], palette.harm['Triádica'][1], ink];
+  const pick = () => pool[Math.floor(R() * pool.length)];
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  const m = 70, top = 70, gh = H * 0.7, cw = (W - m * 2) / cols, ch = gh / rows;
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const px = m + x * cw, py = top + y * ch, s = Math.min(cw, ch), t = R(); ctx.fillStyle = pick();
+    ctx.save(); ctx.translate(px + cw / 2, py + ch / 2); ctx.rotate(Math.floor(R() * 4) * Math.PI / 2);
+    if (t < .2) { ctx.beginPath(); ctx.arc(0, 0, s * .42, 0, Math.PI * 2); ctx.fill(); }
+    else if (t < .4) { ctx.beginPath(); ctx.moveTo(-cw / 2, -ch / 2); ctx.arc(-cw / 2, -ch / 2, s, 0, Math.PI / 2); ctx.closePath(); ctx.save(); ctx.beginPath(); ctx.rect(-cw / 2, -ch / 2, cw, ch); ctx.clip(); ctx.beginPath(); ctx.moveTo(-cw / 2, -ch / 2); ctx.arc(-cw / 2, -ch / 2, s, 0, Math.PI / 2); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    else if (t < .55) { ctx.beginPath(); ctx.arc(0, -s / 2 + 2, s / 2, 0, Math.PI); ctx.fill(); }
+    else if (t < .7) { ctx.fillRect(-cw / 2 + 4, -ch / 2 + 4, cw - 8, ch - 8); }
+    else if (t < .82) { const n = 4; for (let i = 0; i < n; i++) ctx.fillRect(-cw / 2 + 4, -ch / 2 + 4 + i * (ch - 8) / n, cw - 8, (ch - 8) / n / 2); }
+    else if (t < .92) { ctx.beginPath(); ctx.moveTo(-cw / 2 + 4, ch / 2 - 4); ctx.lineTo(cw / 2 - 4, ch / 2 - 4); ctx.lineTo(-cw / 2 + 4, -ch / 2 + 4); ctx.fill(); }
+    ctx.restore();
+  }
+  ctx.fillStyle = ink; ctx.textBaseline = 'alphabetic';
+  const title = $('pTitle').value || ' '; let fs = 120; ctx.font = `800 ${fs}px "Bricolage Grotesque", sans-serif`;
+  while (ctx.measureText(title).width > W - m * 2 && fs > 40) { fs -= 4; ctx.font = `800 ${fs}px "Bricolage Grotesque", sans-serif`; }
+  ctx.fillText(title, m, top + gh + 40 + fs * .85);
+  ctx.font = `500 30px "JetBrains Mono", monospace`; ctx.globalAlpha = .75;
+  ctx.fillText($('pSub').value, m, H - 60);
+  ctx.textAlign = 'right'; ctx.fillText(`#${$('pSeed').value}`, W - m, H - 60); ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+  $('posterImg').src = cv.toDataURL('image/png');
+}
+['pTitle', 'pSub', 'pGrid', 'pSeed'].forEach(id => $(id).addEventListener('input', drawPoster));
+$('pNew').onclick = () => { $('pSeed').value = Math.floor(Math.random() * 9999); drawPoster(); };
+$('pDark').onclick = e => { posterDark = !posterDark; e.currentTarget.setAttribute('aria-pressed', posterDark); drawPoster(); };
+
+/* ---------- orçamento ---------- */
+const TYPES = {
+  identidade: { nome: 'Identidade visual', horas: 40, entregas: ['Pesquisa e moodboard', 'Duas rotas criativas de logotipo', 'Paleta, tipografia e elementos de apoio', 'Manual de marca em PDF'] },
+  site: { nome: 'Site no Framer', horas: 56, entregas: ['Arquitetura de conteúdo e wireframes', 'Layout desktop, tablet e celular', 'Montagem e publicação no Framer', 'Treinamento rápido para editar textos'] },
+  social: { nome: 'Pacote de posts para redes', horas: 18, entregas: ['Grid de 12 posts', 'Template editável para stories', 'Guia rápido de aplicação'] },
+  motion: { nome: 'Vinheta animada', horas: 24, entregas: ['Roteiro e storyboard', 'Animação de até 15 segundos', 'Versões 16:9, 9:16 e 1:1'] }
+};
+const brl = n => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+function renderQuote() {
+  const t = TYPES[$('qType').value], h = Math.max(1, +$('qHours').value || 1), rate = Math.max(1, +$('qRate').value || 1);
+  const rev = +$('qRev').value, rush = $('qRush').checked, files = $('qFiles').checked, inst = +$('qInst').value;
+  $('qRevV').textContent = rev;
+  let total = h * rate * (1 + (rev - 2) * 0.05); if (rush) total *= 1.3; if (files) total *= 1.15;
+  total = Math.round(total / 50) * 50; const down = total / 2, part = (total - down) / inst;
+  $('qTotal').textContent = brl(total); $('qDown').textContent = brl(down);
+  $('qInstL').textContent = inst === 1 ? 'Saldo na entrega' : `${inst} parcelas de`; $('qPart').textContent = brl(part);
+  const cli = $('qClient').value || 'cliente';
+  $('qText').textContent =
+`Proposta · ${t.nome} para ${cli}
+
+Olá! Segue a proposta para o projeto conversado.
+
+O que está incluído
+${t.entregas.map(e => '• ' + e).join('\n')}
+• ${rev} ${rev === 1 ? 'rodada' : 'rodadas'} de revisão${files ? '\n• Arquivos abertos editáveis' : ''}
+
+Prazo
+${rush ? 'Entrega em regime de urgência, com prioridade na agenda.' : `Cerca de ${Math.ceil(h / 20)} ${Math.ceil(h / 20) === 1 ? 'semana' : 'semanas'} a partir da aprovação e do pagamento do sinal.`}
+
+Investimento
+${brl(total)}
+50% de sinal (${brl(down)}) para reservar a agenda e ${inst === 1 ? `o saldo de ${brl(part)} na entrega` : `${inst} parcelas de ${brl(part)}`}.
+
+Revisões além das incluídas são cobradas à parte, pelo valor-hora de ${brl(rate)}.
+
+Fico à disposição para ajustar o que for preciso.`;
+}
+['qType', 'qClient', 'qHours', 'qRate', 'qRev', 'qRush', 'qFiles', 'qInst'].forEach(id => $(id).addEventListener('input', renderQuote));
+$('qType').addEventListener('change', () => { $('qHours').value = TYPES[$('qType').value].horas; renderQuote(); });
+$('copyQuote').onclick = () => copy($('qText').textContent, 'Proposta copiada');
+
+/* ---------- init ---------- */
+buildPalette('#2A3FD4'); renderType(); renderEase(); renderQuote();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawPoster);
+window.addEventListener('resize', () => $('track').style.setProperty('--tw', $('track').clientWidth + 'px'));
+})();
+</script>
+</body>
+</html>
